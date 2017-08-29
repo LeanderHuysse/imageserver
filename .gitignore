@@ -3,3 +3,4 @@ ubuntu-xenial-16.04-cloudimg-console.log
 
 web/data/*
 web/vendor
+.idea
