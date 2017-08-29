@@ -1,0 +1,10 @@
+# If you want to install optional php modules, do the following:
+# - Insert a new line under 'with_items' indented by 2 spaces and prefixed with a dash ( - )
+# - Add the name of the desired php module, 1 per line
+# - Rename the file to php.custom.yml
+# - Provision the box and the extra modules will install (if they exist)
+
+- name: Install Optional PHP Modules
+  apt: name={{ item }} state=present
+  with_items:
+    - php-pdo-firebird
