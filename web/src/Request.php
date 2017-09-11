@@ -1,13 +1,28 @@
 <?php
 
+/**
+ * Class Request
+ */
 class Request
 {
+    /**
+     * @var
+     */
     private $data;
 
+    /**
+     * @var
+     */
     private $type;
 
+    /**
+     * @var string
+     */
     private $directory;
 
+    /**
+     * @var
+     */
     private $file;
 
     /**
@@ -49,6 +64,9 @@ class Request
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function check(): bool
     {
         $id = (string) $this->getData()['id'];
@@ -61,6 +79,9 @@ class Request
         return false;
     }
 
+    /**
+     *
+     */
     public function serve()
     {
         $file = $this->getFile();
@@ -79,6 +100,9 @@ class Request
         }
     }
 
+    /**
+     * @return Imagick
+     */
     protected function resize()
     {
         $width = $this->getData()['w'];
@@ -91,6 +115,11 @@ class Request
 
     }
 
+    /**
+     * @param $file
+     *
+     * @return string
+     */
     protected function resizeArray($file)
     {
         $width = $this->getData()['w'];
@@ -103,6 +132,9 @@ class Request
 
     }
 
+    /**
+     * @return bool
+     */
     protected function get()
     {
         $id = (string) $this->getData()['id'];
