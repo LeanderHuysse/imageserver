@@ -26,6 +26,11 @@ class Request
     private $file;
 
     /**
+     * @var
+     */
+    private $id;
+
+    /**
      * Request constructor.
      *
      * @param $data
@@ -33,10 +38,12 @@ class Request
     public function __construct($data)
     {
         $this->directory = dirname(__DIR__) . '/data';
+        $this->write = dirname(__DIR__) . '/images';
 
         if($this->verify($data)) {
             $this->setData($data);
             $this->setType($data['type']);
+            $this->setId($data['id']);
             $this->get();
         }
 
@@ -80,7 +87,7 @@ class Request
     }
 
     /**
-     *
+     * test 2
      */
     public function serve()
     {
@@ -92,12 +99,63 @@ class Request
             echo $this->resize();
         } elseif($type == 'gallery') {
             $imageArray = [];
-            foreach($file as $img) {
-                $imageArray[] = $this->resizeArray($img);
+            $count = 0;
+
+            /**
+             * Make directory if it doesn't exist yet
+             */
+            if(!file_exists($this->write . '/' . $this->getId())) {
+                $oldumask = umask(0);
+                mkdir($this->write . '/' . $this->getId(), 0777);
+                umask($oldumask);
             }
-            echo json_encode($imageArray);
+
+            $cache_life = 1800;
+
+            foreach($file as $img) {
+                $t = array_pop(explode('/', $img));
+                $tname = $this->write . '/' . $this->getId() .'/'. $t . '_300.jpg';
+                $filemtime = filemtime($tname);
+
+                if(!file_exists($tname) or (time() - $filemtime >= $cache_life)
+                ) {
+                    $thumbnail = $this->resizeArray($img);
+                    if($f = fopen($tname, "w")) {
+                        $thumbnail->writeImageFile($f);
+                    }
+                }
+
+                $l = array_pop(explode('/', $img));
+                $lname = $this->write . '/' . $this->getId() .'/'. $l . '_800_lb.jpg';
+
+                if(!file_exists($lname) or (time() - $filemtime >= $cache_life)) {
+                    $lightbox = $this->resizeArray($img, 800);
+                    if ($f = fopen($lname, "w")) {
+                        $lightbox->writeImageFile($f);
+                    }
+                }
+
+                $imageArray[$count]['thumb'] = $this->getRelative(array_pop(explode('/', $tname)), $this->getId());
+                $imageArray[$count]['lightbox'] = $this->getRelative(array_pop(explode('/', $lname)), $this->getId());
+
+                $count++;
+            }
+
+            echo json_encode($imageArray, true);
             die();
         }
+    }
+
+    /**
+     * @param $file
+     * @param $id
+     *
+     * @return string
+     */
+    public function getRelative($file, $id)
+    {
+        $base = 'https://cdn.iolabs.nl/images/'. $id .'/'. $file;
+        return $base;
     }
 
     /**
@@ -116,19 +174,24 @@ class Request
     }
 
     /**
-     * @param $file
+     * @param     $file
+     * @param int $w
      *
-     * @return string
+     * @return Imagick
      */
-    protected function resizeArray($file)
+    public function resizeArray($file, $w = 0)
     {
-        $width = $this->getData()['w'];
+        if($w !== 0) {
+            $width = $w;
+        } else {
+            $width = $this->getData()['w'];
+        }
         $height = isset($this->getData()['h']) ? $this->getData()['h'] : 0;
 
         $image = new \Imagick($file);
-        $image->scaleImage($width, $height);
+        $image->resizeImage($width, $height, \Imagick::FILTER_CATROM, 1);
 
-        return $image->getImageBlob();
+        return $image;
 
     }
 
@@ -155,18 +218,20 @@ class Request
             $extraThumb = [];
             $featured = glob($this->directory . '/' . $id . '_x.jpg');
 
-            if(count($featured) < 1) {
-                $featured = glob($this->directory . '/' . $id . '.jpg');
-            } else {
+            if(count($featured) > 0) {
                 $extraThumb = glob($this->directory . '/' . $id . '.jpg');
             }
 
             $result = glob($this->directory . '/' . $id . '_[0-9]{[0-9],}.jpg', GLOB_BRACE);
 
             if(count($result) > 0) {
-                array_unshift($result, $extraThumb[0]);
-                asort($result);
+                if(count($extraThumb) > 0) {
+                    array_unshift($result, $extraThumb[0]);
+                }
+                natsort($result);
                 $this->setFile($result);
+            } elseif(count($extraThumb) > 0) {
+                $this->setFile($extraThumb);
             }
 
         }
@@ -219,5 +284,23 @@ class Request
     {
         $this->file = $file;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+
 
 }
