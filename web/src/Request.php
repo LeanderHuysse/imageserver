@@ -60,15 +60,21 @@ class Request
             return false;
         }
 
-        if(!array_key_exists('w', $data)) {
-            return false;
-        }
-
         if(!array_key_exists('type', $data)) {
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * @return bool
+     */
+    public function existence(): bool
+    {
+        if(count($this->getFile()) > 0) {
+            return true;
+        }
     }
 
     /**
