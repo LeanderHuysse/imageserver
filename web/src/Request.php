@@ -79,7 +79,7 @@ class Request
         $id = (string) $this->getData()['id'];
         $type = (string) $this->getType();
 
-        if($type !== 'tile' || $type !== 'header') {
+        if($type !== 'tile' && $type !== 'header') {
             $result = glob($this->directory . '/' . $id . '*');
             if(count($result) >  0) {
                 return true;
