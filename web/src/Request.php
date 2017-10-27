@@ -154,6 +154,9 @@ class Request
         } elseif($type == 'tile') {
             header("Content-type: image/jpeg");
             echo $this->resize();
+        } elseif($type == 'header') {
+            header("Content-type: image/jpeg");
+            echo $this->resize();
         }
     }
 
@@ -247,6 +250,12 @@ class Request
 
         } elseif($type == 'tile') {
             $result = glob($this->directory . '/categories/' . $id . '_tegel-a.jpg');
+            if(count($result) > 0) {
+                $this->setFile($result[0]);
+                return true;
+            }
+        } elseif($type == 'header') {
+            $result = glob($this->directory . '/categories/' . $id . '_header-a.jpg');
             if(count($result) > 0) {
                 $this->setFile($result[0]);
                 return true;
