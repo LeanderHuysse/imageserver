@@ -77,10 +77,18 @@ class Request
     public function check(): bool
     {
         $id = (string) $this->getData()['id'];
+        $type = (string) $this->getType();
 
-        $result = glob($this->directory . '/' . $id . '*');
-        if(count($result) >  0) {
-            return true;
+        if($type !== 'tile' || $type !== 'header') {
+            $result = glob($this->directory . '/' . $id . '*');
+            if(count($result) >  0) {
+                return true;
+            }
+        } else {
+            $result = glob($this->directory . '/categories/' . $id . '*');
+            if(count($result) >  0) {
+                return true;
+            }
         }
 
         return false;
