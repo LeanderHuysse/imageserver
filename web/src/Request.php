@@ -143,7 +143,7 @@ class Request
 
             echo json_encode($imageArray, true);
             die();
-        } elseif($type == 'category_tile') {
+        } elseif($type == 'tile') {
             header("Content-type: image/jpeg");
             echo $this->resize();
         }
@@ -237,7 +237,7 @@ class Request
                 $this->setFile($extraThumb);
             }
 
-        } elseif($type == 'category_tile') {
+        } elseif($type == 'tile') {
             $result = glob($this->directory . '/categories/' . $id . '_tegel-a.jpg');
             if(count($result) > 0) {
                 $this->setFile($result[0]);
