@@ -39,6 +39,7 @@ class Request
     {
         $this->directory = dirname(__DIR__) . '/data';
         $this->write = dirname(__DIR__) . '/images';
+        $this->watermark = new Imagick(dirname(__DIR__) . '/watermark.png');
 
         if($this->verify($data)) {
             $this->setData($data);
@@ -135,6 +136,13 @@ class Request
                 ) {
                     $thumbnail = $this->resizeArray($img);
                     if($f = fopen($tname, "w")) {
+                        $this->watermark->scaleImage(
+                            $thumbnail->getImageWidth() / 2,
+                            0
+                        );
+                        $x = ($thumbnail->getImageWidth() - $this->watermark->getImageWidth()) / 2;
+                        $y = 0;
+                        $thumbnail->compositeImage($this->watermark, Imagick::COMPOSITE_OVER, $x, $y);
                         $thumbnail->writeImageFile($f);
                     }
                 }
@@ -145,6 +153,13 @@ class Request
                 if(!file_exists($lname) or (time() - $filemtime >= $cache_life)) {
                     $lightbox = $this->resizeArray($img, 800);
                     if ($f = fopen($lname, "w")) {
+                        $this->watermark->scaleImage(
+                          $lightbox->getImageWidth() / 2,
+                          0
+                        );
+                        $x = ($lightbox->getImageWidth() - $this->watermark->getImageWidth()) / 2;
+                        $y = 0;
+                        $lightbox->compositeImage($this->watermark, Imagick::COMPOSITE_OVER, $x, $y);
                         $lightbox->writeImageFile($f);
                     }
                 }
